@@ -1,5 +1,13 @@
 import { useMemo, useState } from 'react'
-import { copyChallengeUrl, downloadShareCard, openXIntent, selectFeaturedRound, shareResult } from '../game/share'
+import {
+  copyChallengeUrl,
+  downloadShareCard,
+  openLineShare,
+  openThreadsIntent,
+  openXIntent,
+  selectFeaturedRound,
+  shareResult,
+} from '../game/share'
 import type { GameResult } from '../game/types'
 import { Icon } from './Icon'
 import { ResultCanvas } from './ResultCanvas'
@@ -28,15 +36,20 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
     }
   }
 
-  const sendChallenge = () => run(async () => {
+  const shareToInstagram = () => run(async () => {
     const outcome = await shareResult(result)
     if (outcome === 'fallback') {
-      openXIntent(result)
-      setNotice('Xの投稿画面を開きました。')
+      await downloadShareCard(result)
+      setNotice('画像を保存しました。Instagramストーリーズで選択してください。')
     } else if (outcome === 'shared') {
-      setNotice('SNSに挑戦状を共有しました。')
+      setNotice('共有を完了しました。')
     }
   })
+
+  const openPlatform = (open: (gameResult: GameResult) => void, message: string) => {
+    setNotice(message)
+    open(result)
+  }
 
   return (
     <main className="screen result-screen">
@@ -66,11 +79,25 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
 
         <div className="result-actions">
           <button className="primary-button replay-button" type="button" onClick={onReplay}>もう一度プレイ</button>
-          <button className="challenge-button" type="button" disabled={busy} onClick={sendChallenge}>
-            <Icon name="challenge" />
-            <span>SNSで挑戦状を送る</span>
-          </button>
-          <p>X・Threadsなどにシェア</p>
+          <p className="share-heading">挑戦状をシェア</p>
+          <div className="platform-share-grid" aria-label="SNSを選んで挑戦状をシェア">
+            <button className="platform-share-button platform-x" type="button" onClick={() => openPlatform(openXIntent, 'Xの投稿画面を開きました。')}>
+              <Icon name="x" />
+              <span>X</span>
+            </button>
+            <button className="platform-share-button platform-threads" type="button" onClick={() => openPlatform(openThreadsIntent, 'Threadsの投稿画面を開きました。')}>
+              <Icon name="threads" />
+              <span>Threads</span>
+            </button>
+            <button className="platform-share-button platform-instagram" type="button" disabled={busy} onClick={shareToInstagram} aria-label="Instagramストーリーにシェア">
+              <Icon name="instagram" />
+              <span>ストーリー<small>Instagram</small></span>
+            </button>
+            <button className="platform-share-button platform-line" type="button" onClick={() => openPlatform(openLineShare, 'LINEの共有画面を開きました。')}>
+              <Icon name="line" />
+              <span>LINE</span>
+            </button>
+          </div>
         </div>
 
         <p className="share-notice" aria-live="polite">{notice || '\u00a0'}</p>

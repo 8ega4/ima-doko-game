@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { generateRoundSpecs } from './rounds'
-import { createChallengeUrl, createShareText, createXIntentUrl, selectFeaturedRound } from './share'
+import {
+  createChallengeUrl,
+  createLineShareUrl,
+  createShareText,
+  createThreadsIntentUrl,
+  createXIntentUrl,
+  selectFeaturedRound,
+} from './share'
 import type { GameResult, Point, RoundResult } from './types'
 
 const specs = generateRoundSpecs('share-test')
@@ -48,5 +55,22 @@ describe('result sharing', () => {
     expect(url.origin + url.pathname).toBe('https://x.com/intent/post')
     expect(url.searchParams.get('text')).toContain('180/300点')
     expect(url.searchParams.get('text')).toContain('#いまどこゲーム')
+  })
+
+  it('encodes the result in a Threads Web Intent URL', () => {
+    vi.stubGlobal('window', { location: { href: 'https://example.com/game' } })
+    const url = new URL(createThreadsIntentUrl(gameResult))
+    expect(url.origin + url.pathname).toBe('https://www.threads.com/intent/post')
+    expect(url.searchParams.get('text')).toContain('180/300点')
+    expect(url.searchParams.get('text')).toContain('https://example.com/game?seed=same-course')
+  })
+
+  it('builds a LINE share URL without duplicating the challenge link in its text', () => {
+    vi.stubGlobal('window', { location: { href: 'https://example.com/game' } })
+    const url = new URL(createLineShareUrl(gameResult))
+    expect(url.origin + url.pathname).toBe('https://social-plugins.line.me/lineit/share')
+    expect(url.searchParams.get('url')).toBe('https://example.com/game?seed=same-course')
+    expect(url.searchParams.get('text')).toContain('180/300点')
+    expect(url.searchParams.get('text')).not.toContain('https://example.com/game')
   })
 })

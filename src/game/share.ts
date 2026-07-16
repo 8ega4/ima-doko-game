@@ -21,8 +21,12 @@ export function createChallengeUrl(seed: string): string {
 }
 
 export function createShareText(result: GameResult): string {
+  return `${createShareCaption(result)}\n同じ軌道で勝負 → ${createChallengeUrl(result.seed)}\n#いまどこゲーム`
+}
+
+export function createShareCaption(result: GameResult): string {
   const bestError = Math.min(...result.rounds.map((round) => round.errorPx))
-  return `消えたボール、最小誤差${bestError}px。\n${result.totalScore}/300点、称号「${result.title}」でした。\n同じ軌道で勝負 → ${createChallengeUrl(result.seed)}\n#いまどこゲーム`
+  return `消えたボール、最小誤差${bestError}px。\n${result.totalScore}/300点、称号「${result.title}」でした。`
 }
 
 export async function copyChallengeUrl(seed: string): Promise<void> {
@@ -144,5 +148,26 @@ export function openXIntent(result: GameResult): void {
 export function createXIntentUrl(result: GameResult): string {
   const url = new URL('https://x.com/intent/post')
   url.searchParams.set('text', createShareText(result))
+  return url.toString()
+}
+
+export function openThreadsIntent(result: GameResult): void {
+  window.open(createThreadsIntentUrl(result), '_blank', 'noopener,noreferrer')
+}
+
+export function createThreadsIntentUrl(result: GameResult): string {
+  const url = new URL('https://www.threads.com/intent/post')
+  url.searchParams.set('text', createShareText(result))
+  return url.toString()
+}
+
+export function openLineShare(result: GameResult): void {
+  window.open(createLineShareUrl(result), '_blank', 'noopener,noreferrer')
+}
+
+export function createLineShareUrl(result: GameResult): string {
+  const url = new URL('https://social-plugins.line.me/lineit/share')
+  url.searchParams.set('url', createChallengeUrl(result.seed))
+  url.searchParams.set('text', `${createShareCaption(result)}\n#いまどこゲーム`)
   return url.toString()
 }
