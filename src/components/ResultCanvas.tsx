@@ -27,5 +27,12 @@ export function ResultCanvas({ result }: { result: RoundResult }) {
     return () => observer.disconnect()
   }, [result])
 
-  return <canvas ref={canvasRef} className="result-canvas" aria-label={`誤差 ${result.errorPx}px の軌道`} />
+  return (
+    <canvas
+      ref={canvasRef}
+      className="result-canvas"
+      role="img"
+      aria-label={`ラウンド${result.round.index + 1}、${result.score}点。推測位置と正解位置の誤差は${result.errorPx}pxです。`}
+    />
+  )
 }

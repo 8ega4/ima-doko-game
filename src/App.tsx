@@ -17,6 +17,8 @@ export default function App() {
   const [result, setResult] = useState<GameResult | null>(null)
   const [bestScore, setBestScore] = useState<number | null>(initialStoredState.bestScore)
   const [muted, setMuted] = useState(initialStoredState.muted)
+  const [relaxed, setRelaxed] = useState(false)
+  const [isNewBest, setIsNewBest] = useState(false)
 
   const updateStorage = (nextBest: number | null, nextMuted: boolean) => {
     saveStoredState({ bestScore: nextBest, muted: nextMuted })
@@ -36,11 +38,14 @@ export default function App() {
       <PlayScreen
         seed={seed}
         muted={muted}
+        relaxed={relaxed}
         onToggleMute={toggleMute}
         onComplete={(gameResult) => {
+          const improved = bestScore === null || gameResult.totalScore > bestScore
           const nextBest = Math.max(bestScore ?? 0, gameResult.totalScore)
           setResult(gameResult)
           setBestScore(nextBest)
+          setIsNewBest(improved)
           updateStorage(nextBest, muted)
           setScreen('result')
         }}
@@ -52,10 +57,12 @@ export default function App() {
     return (
       <ResultScreen
         result={result}
+        isNewBest={isNewBest}
         onReplay={() => {
           const nextSeed = createSeed()
           setSeed(nextSeed)
           setResult(null)
+          setIsNewBest(false)
           window.history.replaceState({}, '', window.location.pathname)
           setScreen('play')
         }}
@@ -67,8 +74,10 @@ export default function App() {
     <TitleScreen
       bestScore={bestScore}
       muted={muted}
+      relaxed={relaxed}
       isChallenge={initialChallengeSeed !== null}
       onToggleMute={toggleMute}
+      onToggleRelaxed={() => setRelaxed((current) => !current)}
       onStart={() => {
         void unlockAudio(muted)
         setScreen('play')

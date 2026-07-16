@@ -1,12 +1,10 @@
 import { BALL_RADIUS, simulateMotion } from './physics'
-import { JUDGE_DURATION_MS } from './constants'
 import type { GamePhase, Point, RoundResult, RoundSpec } from './types'
 
 export const COLORS = {
   background: '#020713',
   field: '#031426',
   cyan: '#25d9ff',
-  cyanMuted: 'rgba(37, 217, 255, 0.24)',
   coral: '#ff654f',
   yellow: '#f4f700',
   white: '#f7f3ea',
@@ -17,6 +15,9 @@ export type GameFrame = {
   phase: GamePhase
   elapsedMs: number
   guess: Point | null
+  cursor: Point | null
+  judgeDurationMs: number | null
+  reducedMotion: boolean
 }
 
 function mapPoint(point: Point, size: number, padding: number): Point {
@@ -33,6 +34,7 @@ function drawPolyline(
   size: number,
   padding: number,
   dashed: boolean,
+  alpha = 1,
 ): void {
   if (points.length < 2) return
   context.save()
@@ -43,6 +45,7 @@ function drawPolyline(
     else context.lineTo(mapped.x, mapped.y)
   })
   context.strokeStyle = COLORS.coral
+  context.globalAlpha = alpha
   context.lineWidth = Math.max(3, size * 0.012)
   context.lineCap = 'round'
   context.lineJoin = 'round'
@@ -59,8 +62,8 @@ function drawFieldChrome(context: CanvasRenderingContext2D, size: number, paddin
   context.save()
   context.strokeStyle = 'rgba(37, 217, 255, 0.08)'
   context.lineWidth = 1
-  for (let index = 1; index < 10; index += 1) {
-    const position = padding + (inner * index) / 10
+  for (let index = 1; index < 8; index += 1) {
+    const position = padding + (inner * index) / 8
     context.beginPath()
     context.moveTo(position, padding)
     context.lineTo(position, size - padding)
@@ -76,13 +79,13 @@ function drawFieldChrome(context: CanvasRenderingContext2D, size: number, paddin
   context.strokeStyle = COLORS.cyan
   context.lineWidth = Math.max(2, size * 0.006)
   context.strokeRect(padding, padding, inner, inner)
-  context.strokeStyle = COLORS.cyanMuted
+  context.strokeStyle = 'rgba(37, 217, 255, 0.16)'
   context.setLineDash([2, 7])
   context.beginPath()
-  context.arc(size / 2, size / 2, inner * 0.26, 0, Math.PI * 2)
+  context.arc(size / 2, size / 2, inner * 0.25, 0, Math.PI * 2)
   context.stroke()
   context.beginPath()
-  context.arc(size / 2, size / 2, inner * 0.43, 0, Math.PI * 2)
+  context.arc(size / 2, size / 2, inner * 0.42, 0, Math.PI * 2)
   context.stroke()
   context.restore()
 
@@ -103,6 +106,46 @@ function drawFieldChrome(context: CanvasRenderingContext2D, size: number, paddin
     context.lineTo(size - padding + length, position)
     context.stroke()
   }
+  context.restore()
+}
+
+function drawIntroScan(context: CanvasRenderingContext2D, size: number, padding: number, elapsedMs: number, reducedMotion: boolean): void {
+  const inner = size - padding * 2
+  const progress = reducedMotion ? 0.5 : (elapsedMs % 500) / 500
+  const y = padding + inner * progress
+  context.save()
+  context.strokeStyle = 'rgba(37, 217, 255, 0.72)'
+  context.shadowColor = COLORS.cyan
+  context.shadowBlur = reducedMotion ? 0 : size * 0.035
+  context.lineWidth = Math.max(1.5, size * 0.005)
+  context.beginPath()
+  context.moveTo(padding, y)
+  context.lineTo(size - padding, y)
+  context.stroke()
+  context.restore()
+}
+
+function drawAnswerProgress(
+  context: CanvasRenderingContext2D,
+  size: number,
+  padding: number,
+  elapsedMs: number,
+  durationMs: number | null,
+): void {
+  const inner = size - padding * 2
+  const inset = padding - size * 0.012
+  const edge = inner + size * 0.024
+  context.save()
+  context.strokeStyle = COLORS.yellow
+  context.lineWidth = Math.max(3, size * 0.009)
+  if (durationMs !== null) {
+    const remaining = Math.max(0, 1 - elapsedMs / durationMs)
+    const perimeter = edge * 4
+    context.setLineDash([Math.max(0.001, perimeter * remaining), perimeter])
+    context.lineDashOffset = -edge * 0.5
+    if (remaining < 0.3) context.strokeStyle = COLORS.coral
+  }
+  context.strokeRect(inset, inset, edge, edge)
   context.restore()
 }
 
@@ -178,39 +221,27 @@ export function drawGameFrame(
   context.clearRect(0, 0, size, size)
   drawFieldChrome(context, size, padding)
 
-  if (frame.phase === 'visible') {
+  if (frame.phase === 'roundIntro') {
+    drawIntroScan(context, size, padding, frame.elapsedMs, frame.reducedMotion)
+  } else if (frame.phase === 'visible') {
     const current = simulateMotion(round.initial, Math.min(frame.elapsedMs, round.visibleDurationMs) / 1000)
     drawPolyline(context, current.points, size, padding, false)
     drawBall(context, current.state, size, padding)
-  } else if (frame.phase !== 'roundIntro') {
-    drawPolyline(context, round.visibleTrace, size, padding, false)
+  } else {
+    const traceAlpha = frame.phase === 'hidden' ? 0.58 : frame.phase === 'judgeFrozen' ? 0.42 : 1
+    drawPolyline(context, round.visibleTrace, size, padding, false, traceAlpha)
   }
 
   if (frame.phase === 'judgeFrozen') {
-    const pulse = 0.45 + Math.sin(frame.elapsedMs / 160) * 0.12
-    context.save()
-    context.strokeStyle = `rgba(244, 247, 0, ${pulse})`
-    context.lineWidth = 2
-    context.beginPath()
-    context.arc(size / 2, size / 2, size * (0.11 + (frame.elapsedMs % 800) / 4800), 0, Math.PI * 2)
-    context.stroke()
-    context.restore()
-
-    const remaining = Math.max(0, 1 - frame.elapsedMs / JUDGE_DURATION_MS)
-    const barWidth = size * 0.5
-    const barHeight = Math.max(4, size * 0.014)
-    const barX = (size - barWidth) / 2
-    const barY = size - padding - size * 0.045
-    context.fillStyle = 'rgba(244, 247, 0, 0.18)'
-    context.fillRect(barX, barY, barWidth, barHeight)
-    context.fillStyle = remaining < 0.3 ? COLORS.coral : COLORS.yellow
-    context.fillRect(barX, barY, barWidth * remaining, barHeight)
+    drawAnswerProgress(context, size, padding, frame.elapsedMs, frame.judgeDurationMs)
+    if (frame.cursor) drawGuess(context, frame.cursor, size, padding)
   }
 
   if (frame.phase === 'reveal') {
-    drawPolyline(context, round.hiddenTrace, size, padding, true)
-    drawTarget(context, round.target, size, padding)
-    if (frame.guess) {
+    const instant = frame.reducedMotion
+    drawPolyline(context, round.hiddenTrace, size, padding, true, frame.elapsedMs >= 100 || instant ? 1 : 0.15)
+    if (frame.elapsedMs >= 180 || instant) drawTarget(context, round.target, size, padding)
+    if (frame.guess && (frame.elapsedMs >= 340 || instant)) {
       drawErrorLine(context, round.target, frame.guess, size, padding)
       drawGuess(context, frame.guess, size, padding)
     }

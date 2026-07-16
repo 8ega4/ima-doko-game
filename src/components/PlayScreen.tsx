@@ -11,6 +11,7 @@ import { Icon } from './Icon'
 type PlayScreenProps = {
   seed: string
   muted: boolean
+  relaxed: boolean
   onToggleMute: () => void
   onComplete: (result: GameResult) => void
 }
@@ -20,10 +21,10 @@ const PHASE_DURATION: Record<GamePhase, number> = {
   visible: 1200,
   hidden: 0,
   judgeFrozen: JUDGE_DURATION_MS,
-  reveal: 1100,
+  reveal: 1650,
 }
 
-export function PlayScreen({ seed, muted, onToggleMute, onComplete }: PlayScreenProps) {
+export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: PlayScreenProps) {
   const rounds = useMemo(() => generateRoundSpecs(seed), [seed])
   const [roundIndex, setRoundIndex] = useState(0)
   const [phase, setPhase] = useState<GamePhase>('roundIntro')
@@ -65,7 +66,11 @@ export function PlayScreen({ seed, muted, onToggleMute, onComplete }: PlayScreen
     const tick = () => {
       if (pausedAtRef.current === null && !transitioningRef.current) {
         const elapsed = performance.now() - phaseStartedAt
-        const duration = phase === 'hidden' ? round.hiddenDurationMs : PHASE_DURATION[phase]
+        const duration = phase === 'hidden'
+          ? round.hiddenDurationMs
+          : phase === 'judgeFrozen' && relaxed
+            ? Number.POSITIVE_INFINITY
+            : PHASE_DURATION[phase]
         if (elapsed >= duration) {
           transitioningRef.current = true
           if (phase === 'roundIntro') {
@@ -96,7 +101,7 @@ export function PlayScreen({ seed, muted, onToggleMute, onComplete }: PlayScreen
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [muted, onComplete, phase, phaseStartedAt, results, round.hiddenDurationMs, roundIndex, rounds.length, seed, submitGuess, transition])
+  }, [muted, onComplete, phase, phaseStartedAt, relaxed, results, round.hiddenDurationMs, roundIndex, rounds.length, seed, submitGuess, transition])
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -124,8 +129,18 @@ export function PlayScreen({ seed, muted, onToggleMute, onComplete }: PlayScreen
             ? `${results.at(-1)?.errorPx ?? 0}px ズレ`
             : '見失った'
 
+  const phaseHint = phase === 'roundIntro'
+    ? `反射 ${round.targetBounces}回`
+    : phase === 'judgeFrozen'
+      ? relaxed ? '矢印キーで照準、Enterで決定' : 'ボールがいる場所をタップ'
+      : phase === 'hidden'
+        ? '頭の中で追い続けて'
+        : phase === 'reveal'
+          ? `+${results.at(-1)?.score ?? 0} POINT`
+          : '\u00a0'
+
   return (
-    <main className={`screen play-screen ${phase === 'reveal' && (results.at(-1)?.score ?? 100) < 55 ? 'is-miss' : ''}`}>
+    <main className={`screen play-screen phase-${phase} ${phase === 'reveal' && (results.at(-1)?.score ?? 100) < 55 ? 'is-miss' : ''}`}>
       <header className="play-header">
         <span className="brand-small">いま、どこ？</span>
         <div className="round-progress" aria-label={`3ラウンド中${roundIndex + 1}ラウンド`}>
@@ -136,16 +151,26 @@ export function PlayScreen({ seed, muted, onToggleMute, onComplete }: PlayScreen
       </header>
 
       <section className="play-content">
-        <div className="phase-copy" aria-live="polite">
+        <div className="phase-copy" role="status" aria-live="assertive">
           <h2>{status}</h2>
-          <p>{phase === 'judgeFrozen' ? 'ボールがいる場所をタップ' : phase === 'hidden' ? '頭の中で追い続けて' : '\u00a0'}</p>
+          <p>{phaseHint}</p>
         </div>
-        <GameCanvas round={round} phase={phase} phaseStartedAt={phaseStartedAt} guess={guess} onGuess={submitGuess} />
+        <GameCanvas
+          round={round}
+          phase={phase}
+          phaseStartedAt={phaseStartedAt}
+          guess={guess}
+          relaxed={relaxed}
+          onGuess={submitGuess}
+        />
+        <p id="game-canvas-help" className="visually-hidden">
+          回答中はフィールドをタップできます。キーボードでは矢印キーで照準を動かし、Enterキーで決定します。
+        </p>
         <div className="play-footer">
-          <span>{phase === 'reveal' ? `+${results.at(-1)?.score ?? 0}` : 'ボールは等速で反射する'}</span>
+          <span>{relaxed ? 'じっくりモード ∞' : phase === 'reveal' ? '測定完了' : roundIndex === 0 ? 'ボールは等速で反射する' : `反射 ${round.targetBounces}回`}</span>
           <button className="sound-button compact" type="button" onClick={onToggleMute} aria-label={muted ? '音を出す' : '音を消す'}>
             <Icon name={muted ? 'mute' : 'sound'} />
-            <span>音 {muted ? 'OFF' : 'ON'}</span>
+            <span>{muted ? 'OFF' : 'ON'}</span>
           </button>
         </div>
       </section>

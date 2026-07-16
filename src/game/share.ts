@@ -1,6 +1,9 @@
 import { drawResultField, COLORS } from './rendering'
 import type { GameResult, RoundResult } from './types'
 
+const UI_FONT = '"Noto Sans JP Variable", system-ui, sans-serif'
+const NUMBER_FONT = '"Roboto Mono Variable", ui-monospace, monospace'
+
 export function selectFeaturedRound(rounds: RoundResult[]): RoundResult {
   const answeredRounds = rounds.filter((round) => round.guess !== null)
   const candidates = answeredRounds.length > 0 ? answeredRounds : rounds
@@ -65,38 +68,43 @@ export async function generateShareCard(result: GameResult): Promise<File> {
 
   context.textAlign = 'center'
   context.fillStyle = COLORS.white
-  context.font = '800 64px system-ui, sans-serif'
+  context.font = `800 64px ${UI_FONT}`
   context.fillText('いま、どこ？', width / 2, 104)
-  context.font = '900 150px system-ui, sans-serif'
+  context.font = `820 150px ${NUMBER_FONT}`
   context.fillText(`${result.totalScore}`, width / 2 - 72, 290)
-  context.font = '800 58px system-ui, sans-serif'
+  context.font = `760 58px ${NUMBER_FONT}`
   context.fillText('/ 300', width / 2 + 210, 286)
   context.fillStyle = COLORS.yellow
-  context.font = '900 76px system-ui, sans-serif'
+  context.font = `850 76px ${UI_FONT}`
   context.fillText(result.title, width / 2, 380)
 
   const featured = selectFeaturedRound(result.rounds)
   const field = document.createElement('canvas')
-  field.width = 960
-  field.height = 960
+  field.width = 840
+  field.height = 840
   const fieldContext = field.getContext('2d')
   if (!fieldContext) throw new Error('Canvasを利用できません')
-  drawResultField(fieldContext, 960, featured)
-  context.drawImage(field, 120, 430, 960, 960)
+  drawResultField(fieldContext, 840, featured)
+  context.drawImage(field, 180, 420, 840, 840)
 
-  context.fillStyle = COLORS.coral
-  context.fillRect(120, 1360, 960, 4)
   context.fillStyle = COLORS.white
-  context.font = '800 48px system-ui, sans-serif'
-  context.fillText(`誤差 ${featured.errorPx}px`, width / 2, 1420)
+  context.font = `760 42px ${UI_FONT}`
+  context.fillText(`誤差 ${featured.errorPx}px`, width / 2, 1315)
+
   context.fillStyle = COLORS.cyan
-  context.font = '700 30px system-ui, sans-serif'
-  context.fillText('あなたなら当てられる？　#いまどこゲーム', width / 2, 1460)
+  context.fillRect(120, 1350, 960, 3)
+  context.font = `720 34px ${NUMBER_FONT}`
+  const rounds = result.rounds.map((round, index) => `R${index + 1}  ${round.score}`).join('    ')
+  context.fillText(rounds, width / 2, 1408)
+
+  context.fillStyle = COLORS.cyan
+  context.font = `700 30px ${UI_FONT}`
+  context.fillText('同じ軌道で勝負　#いまどこゲーム', width / 2, 1458)
   const challengeUrl = new URL(createChallengeUrl(result.seed))
   const challengeLabel = `${challengeUrl.host}${challengeUrl.pathname}`.replace(/\/$/, '')
   context.fillStyle = COLORS.yellow
-  context.font = '800 25px ui-monospace, monospace'
-  context.fillText(challengeLabel, width / 2, 1492, 1000)
+  context.font = `760 25px ${NUMBER_FONT}`
+  context.fillText(challengeLabel, width / 2, 1493, 1000)
 
   const blob = await canvasToBlob(canvas)
   return new File([blob], 'ima-doko-result.png', { type: 'image/png' })
