@@ -89,13 +89,13 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
               <Icon name="threads" />
               <span>Threads</span>
             </button>
-            <button className="platform-share-button platform-challenge" type="button" disabled={busy} onClick={shareChallenge}>
-              <Icon name="challenge" />
-              <span>挑戦状を送る</span>
-            </button>
             <button className="platform-share-button platform-line" type="button" onClick={() => openPlatform(openLineShare, 'LINEの共有画面を開きました。')}>
               <Icon name="line" />
               <span>LINE</span>
+            </button>
+            <button className="platform-share-button platform-challenge" type="button" disabled={busy} onClick={shareChallenge}>
+              <Icon name="challenge" />
+              <span>挑戦状を送る</span>
             </button>
           </div>
         </div>
