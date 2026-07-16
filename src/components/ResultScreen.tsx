@@ -77,42 +77,29 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
           ))}
         </div>
 
-        <div className="result-actions">
-          <button className="primary-button replay-button" type="button" onClick={onReplay}>もう一度プレイ</button>
-          <p className="share-heading">挑戦状をシェア</p>
-          <div className="platform-share-grid" aria-label="SNSを選んで挑戦状をシェア">
-            <button className="platform-share-button platform-x" type="button" onClick={() => openPlatform(openXIntent, 'Xの投稿画面を開きました。')}>
-              <Icon name="x" />
-              <span>X</span>
-            </button>
-            <button className="platform-share-button platform-threads" type="button" onClick={() => openPlatform(openThreadsIntent, 'Threadsの投稿画面を開きました。')}>
+        <div className="result-actions" aria-label="結果をシェア">
+          <button className="share-action share-action-x" type="button" onClick={() => openPlatform(openXIntent, 'Xの投稿画面を開きました。')}>
+            <Icon name="x" />
+            <span>Xで共有</span>
+          </button>
+
+          <div className="share-action-row">
+            <button className="share-action share-action-threads" type="button" onClick={() => openPlatform(openThreadsIntent, 'Threadsの投稿画面を開きました。')}>
               <Icon name="threads" />
-              <span>Threads</span>
+              <span>Threadsで共有</span>
             </button>
-            <button className="platform-share-button platform-line" type="button" onClick={() => openPlatform(openLineShare, 'LINEの共有画面を開きました。')}>
+            <button className="share-action share-action-line" type="button" onClick={() => openPlatform(openLineShare, 'LINEの共有画面を開きました。')}>
               <Icon name="line" />
-              <span>LINE</span>
-            </button>
-            <button className="platform-share-button platform-challenge" type="button" disabled={busy} onClick={shareChallenge}>
-              <Icon name="challenge" />
-              <span>挑戦状を送る</span>
+              <span>LINEで送る</span>
             </button>
           </div>
-        </div>
 
-        <p className="share-notice" aria-live="polite">{notice || '\u00a0'}</p>
-
-        <details className="share-more">
-          <summary>保存・リンク</summary>
-          <div>
-            <button type="button" disabled={busy} onClick={() => run(async () => {
-              await downloadShareCard(result)
-              setNotice('結果画像を保存しました。')
-            })}>
-              <Icon name="image" />
-              <span>結果画像を保存</span>
+          <div className="share-action-row share-action-row-utility">
+            <button className="share-action share-action-utility" type="button" disabled={busy} onClick={shareChallenge}>
+              <Icon name="share" />
+              <span>シェア先を選ぶ</span>
             </button>
-            <button type="button" disabled={busy} onClick={() => run(async () => {
+            <button className="share-action share-action-utility" type="button" disabled={busy} onClick={() => run(async () => {
               await copyChallengeUrl(result.seed)
               setNotice('同じ軌道のリンクをコピーしました。')
             })}>
@@ -120,7 +107,14 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
               <span>リンクをコピー</span>
             </button>
           </div>
-        </details>
+
+          <p className="share-notice" aria-live="polite">{notice || '\u00a0'}</p>
+
+          <button className="primary-button replay-button" type="button" onClick={onReplay}>
+            <Icon name="replay" />
+            <span>もう一度プレイ</span>
+          </button>
+        </div>
       </section>
     </main>
   )

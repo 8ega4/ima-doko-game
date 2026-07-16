@@ -1,4 +1,5 @@
 import {
+  ArrowCounterClockwise,
   ChatCircleDots,
   CopySimple,
   ImageSquare,
@@ -10,7 +11,7 @@ import {
   XLogo,
 } from '@phosphor-icons/react'
 
-type IconName = 'sound' | 'mute' | 'challenge' | 'share' | 'image' | 'copy' | 'x' | 'threads' | 'line'
+type IconName = 'sound' | 'mute' | 'challenge' | 'share' | 'image' | 'copy' | 'x' | 'threads' | 'line' | 'replay'
 
 export function Icon({ name }: { name: IconName }) {
   const props = { 'aria-hidden': true, size: 24, weight: 'bold' as const }
@@ -22,5 +23,6 @@ export function Icon({ name }: { name: IconName }) {
   if (name === 'x') return <XLogo {...props} />
   if (name === 'threads') return <ThreadsLogo {...props} />
   if (name === 'line') return <ChatCircleDots {...props} />
+  if (name === 'replay') return <ArrowCounterClockwise {...props} />
   return <ImageSquare {...props} />
 }
