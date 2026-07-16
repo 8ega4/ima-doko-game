@@ -1,15 +1,9 @@
 import { createPrng } from './prng'
 import { simulateMotion } from './physics'
 import type { MotionState, RoundSpec } from './types'
+import { BASE_BALL_SPEED, ROUND_DIFFICULTY, TOTAL_ROUNDS } from './constants'
 
-const ROUND_SETTINGS = [
-  { hiddenDurationMs: 1400, targetBounces: 0, speed: 0.26 },
-  { hiddenDurationMs: 1700, targetBounces: 1, speed: 0.34 },
-  { hiddenDurationMs: 2000, targetBounces: 2, speed: 0.44 },
-] as const
-
-const VISIBLE_DURATION_MS = 1200
-const MAX_ATTEMPTS = 240
+const MAX_ATTEMPTS = 400
 
 function createInitialState(random: () => number, speed: number): MotionState {
   const angle = random() * Math.PI * 2
@@ -22,21 +16,24 @@ function createInitialState(random: () => number, speed: number): MotionState {
 }
 
 export function generateRoundSpecs(seed: string): RoundSpec[] {
-  return ROUND_SETTINGS.map((settings, index) => {
+  return ROUND_DIFFICULTY.map((settings, index) => {
     const random = createPrng(`${seed}:${index}`)
     let selected: RoundSpec | null = null
     let closest: { difference: number; spec: RoundSpec } | null = null
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-      const initial = createInitialState(random, settings.speed * (0.92 + random() * 0.16))
-      const visible = simulateMotion(initial, VISIBLE_DURATION_MS / 1000)
+      const speed = BASE_BALL_SPEED * settings.speedMultiplier * (0.98 + random() * 0.04)
+      const initial = createInitialState(random, speed)
+      const visible = simulateMotion(initial, settings.visibleDurationMs / 1000)
       const hidden = simulateMotion(visible.state, settings.hiddenDurationMs / 1000)
       const totalBounces = visible.bounces + hidden.bounces
       const spec: RoundSpec = {
         index,
-        visibleDurationMs: VISIBLE_DURATION_MS,
+        speedMultiplier: settings.speedMultiplier,
+        difficultyLabel: settings.introLabel,
+        visibleDurationMs: settings.visibleDurationMs,
         hiddenDurationMs: settings.hiddenDurationMs,
-        targetBounces: settings.targetBounces,
+        targetBounces: totalBounces,
         initial,
         visibleTrace: visible.points,
         hiddenTrace: hidden.points,
@@ -56,4 +53,8 @@ export function generateRoundSpecs(seed: string): RoundSpec[] {
 
     return selected ?? closest!.spec
   })
+}
+
+if (ROUND_DIFFICULTY.length !== TOTAL_ROUNDS) {
+  throw new Error('ラウンド設定数がTOTAL_ROUNDSと一致していません')
 }

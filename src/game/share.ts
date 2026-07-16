@@ -1,5 +1,6 @@
 import { drawResultField, COLORS } from './rendering'
 import type { GameResult, RoundResult } from './types'
+import { MAX_TOTAL_SCORE } from './constants'
 
 const UI_FONT = '"Noto Sans JP Variable", system-ui, sans-serif'
 const NUMBER_FONT = '"Roboto Mono Variable", ui-monospace, monospace'
@@ -26,7 +27,11 @@ export function createShareText(result: GameResult): string {
 
 export function createShareCaption(result: GameResult): string {
   const bestError = Math.min(...result.rounds.map((round) => round.errorPx))
-  return `消えたボール、最小誤差${bestError}px。\n${result.totalScore}/300点、称号「${result.title}」でした。`
+  return `消えたボール、最小誤差${bestError}px。\n${result.totalScore}/${MAX_TOTAL_SCORE}点、称号「${result.title}」でした。`
+}
+
+export function createRoundScoreLabels(result: GameResult): string[] {
+  return result.rounds.map((round, index) => `R${index + 1} ${round.score}`)
 }
 
 export async function copyChallengeUrl(seed: string): Promise<void> {
@@ -77,7 +82,7 @@ export async function generateShareCard(result: GameResult): Promise<File> {
   context.font = `820 150px ${NUMBER_FONT}`
   context.fillText(`${result.totalScore}`, width / 2 - 72, 290)
   context.font = `760 58px ${NUMBER_FONT}`
-  context.fillText('/ 300', width / 2 + 210, 286)
+  context.fillText(`/ ${MAX_TOTAL_SCORE}`, width / 2 + 210, 286)
   context.fillStyle = COLORS.yellow
   context.font = `850 76px ${UI_FONT}`
   context.fillText(result.title, width / 2, 380)
@@ -97,18 +102,26 @@ export async function generateShareCard(result: GameResult): Promise<File> {
 
   context.fillStyle = COLORS.cyan
   context.fillRect(120, 1350, 960, 3)
-  context.font = `720 34px ${NUMBER_FONT}`
-  const rounds = result.rounds.map((round, index) => `R${index + 1}  ${round.score}`).join('    ')
-  context.fillText(rounds, width / 2, 1408)
+  const roundCellWidth = 960 / result.rounds.length
+  const roundScoreLabels = createRoundScoreLabels(result)
+  result.rounds.forEach((round, index) => {
+    const centerX = 120 + roundCellWidth * (index + 0.5)
+    context.fillStyle = COLORS.muted
+    context.font = `720 25px ${NUMBER_FONT}`
+    context.fillText(roundScoreLabels[index].split(' ')[0], centerX, 1390)
+    context.fillStyle = COLORS.cyan
+    context.font = `800 34px ${NUMBER_FONT}`
+    context.fillText(`${round.score}`, centerX, 1427)
+  })
 
   context.fillStyle = COLORS.cyan
   context.font = `700 30px ${UI_FONT}`
-  context.fillText('同じ軌道で勝負　#いまどこゲーム', width / 2, 1458)
+  context.fillText('同じ軌道で勝負　#いまどこゲーム', width / 2, 1464)
   const challengeUrl = new URL(createChallengeUrl(result.seed))
   const challengeLabel = `${challengeUrl.host}${challengeUrl.pathname}`.replace(/\/$/, '')
   context.fillStyle = COLORS.yellow
   context.font = `760 25px ${NUMBER_FONT}`
-  context.fillText(challengeLabel, width / 2, 1493, 1000)
+  context.fillText(challengeLabel, width / 2, 1495, 1000)
 
   const blob = await canvasToBlob(canvas)
   return new File([blob], 'ima-doko-result.png', { type: 'image/png' })

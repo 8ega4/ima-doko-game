@@ -16,6 +16,8 @@ export type MotionTrace = {
 
 export type RoundSpec = {
   index: number
+  speedMultiplier: number
+  difficultyLabel: string
   visibleDurationMs: number
   hiddenDurationMs: number
   targetBounces: number

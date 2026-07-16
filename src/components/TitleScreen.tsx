@@ -1,5 +1,6 @@
 import { Icon } from './Icon'
 import { TitleDemoCanvas } from './TitleDemoCanvas'
+import { ESTIMATED_PLAY_SECONDS, MAX_TOTAL_SCORE, TOTAL_ROUNDS } from '../game/constants'
 
 type TitleScreenProps = {
   bestScore: number | null
@@ -34,15 +35,15 @@ export function TitleScreen({ bestScore, muted, relaxed, isChallenge, onStart, o
         </div>
 
         <div className="title-actions">
-          <div className="game-meta" aria-label="3ラウンド、約15秒、1タップで遊べます">
-            <span>3 ROUND</span>
-            <span>約15秒</span>
+          <div className="game-meta" aria-label={`${TOTAL_ROUNDS}ラウンド、約${ESTIMATED_PLAY_SECONDS}秒、1タップで遊べます`}>
+            <span>{TOTAL_ROUNDS} ROUND</span>
+            <span>約{ESTIMATED_PLAY_SECONDS}秒</span>
             <span>1 TAP</span>
           </div>
           <button className="primary-button" type="button" onClick={onStart}>
             {isChallenge ? '同じ軌道で挑戦' : 'プレイ'}
           </button>
-          {bestScore !== null && <p className="best-score">自己ベスト <strong>{bestScore}</strong> / 300</p>}
+          {bestScore !== null && <p className="best-score">自己ベスト <strong>{bestScore}</strong> / {MAX_TOTAL_SCORE}</p>}
           <button className="mode-toggle" type="button" aria-pressed={relaxed} onClick={onToggleRelaxed}>
             <span>じっくりモード</span>
             <strong>{relaxed ? 'ON' : 'OFF'}</strong>

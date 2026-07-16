@@ -1,14 +1,18 @@
+import { MAX_SCORE_PER_ROUND, MAX_TOTAL_SCORE } from './constants'
+
 const TITLES = [
-  { minimum: 270, title: '預言者' },
-  { minimum: 225, title: '物理学者' },
-  { minimum: 165, title: '追跡者' },
-  { minimum: 90, title: '一般人' },
+  { minimum: MAX_TOTAL_SCORE, title: '完全追跡者' },
+  { minimum: 470, title: '預言者' },
+  { minimum: 420, title: '物理学者' },
+  { minimum: 350, title: '追跡者' },
+  { minimum: 250, title: '目で追う人' },
+  { minimum: 150, title: '軌道迷子' },
   { minimum: 0, title: 'ボールと絶縁' },
 ] as const
 
 export function scoreDistance(distance: number): number {
   const distancePercent = distance * 100
-  return Math.max(0, Math.min(100, Math.round(100 - distancePercent * 2.5)))
+  return Math.max(0, Math.min(MAX_SCORE_PER_ROUND, Math.round(MAX_SCORE_PER_ROUND - distancePercent * 2.5)))
 }
 
 export function getTitle(totalScore: number): string {

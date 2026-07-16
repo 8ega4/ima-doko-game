@@ -1,3 +1,5 @@
+import { MAX_TOTAL_SCORE } from './constants'
+
 const STORAGE_KEY = 'ima-doko:v1'
 
 type StoredState = {
@@ -12,6 +14,11 @@ const DEFAULT_STATE: StoredState = {
   muted: false,
 }
 
+function normalizeBestScore(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  return Math.max(0, Math.min(MAX_TOTAL_SCORE, Math.round(value)))
+}
+
 export function loadStoredState(): StoredState {
   try {
     const value = localStorage.getItem(STORAGE_KEY)
@@ -21,7 +28,7 @@ export function loadStoredState(): StoredState {
 
     return {
       version: 1,
-      bestScore: typeof parsed.bestScore === 'number' ? parsed.bestScore : null,
+      bestScore: normalizeBestScore(parsed.bestScore),
       muted: typeof parsed.muted === 'boolean' ? parsed.muted : false,
     }
   } catch {
@@ -31,7 +38,11 @@ export function loadStoredState(): StoredState {
 
 export function saveStoredState(state: Omit<StoredState, 'version'>): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, ...state }))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      version: 1,
+      bestScore: normalizeBestScore(state.bestScore),
+      muted: state.muted,
+    }))
   } catch {
     // Storage is an enhancement; gameplay remains available when it is blocked.
   }

@@ -307,6 +307,11 @@ canvas:focus-visible {
   background: var(--cyan);
 }
 
+.is-final-round .round-progress i.is-active {
+  background: var(--yellow);
+  box-shadow: 0 0 8px rgba(244, 247, 0, .5);
+}
+
 .play-content {
   flex: 1;
   min-height: 0;
@@ -344,6 +349,15 @@ canvas:focus-visible {
   color: var(--cyan);
   font-family: var(--number-font);
   letter-spacing: .05em;
+}
+
+.is-final-round.phase-roundIntro .phase-copy {
+  animation: final-round-pulse 650ms ease-out both;
+}
+
+.is-final-round.phase-roundIntro .phase-copy h2,
+.is-final-round.phase-roundIntro .phase-copy p {
+  color: var(--yellow);
 }
 
 .phase-judgeFrozen .phase-copy h2,
@@ -528,7 +542,7 @@ canvas:focus-visible {
 
 .round-summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border-block: 1px solid rgba(37, 217, 255, .48);
 }
 
@@ -537,7 +551,7 @@ canvas:focus-visible {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 8px;
+  gap: 5px;
   padding: 7px 4px;
 }
 
@@ -556,6 +570,12 @@ canvas:focus-visible {
   font-family: var(--number-font);
   font-size: 24px;
   font-weight: 800;
+}
+
+@keyframes final-round-pulse {
+  0% { opacity: .25; transform: scale(.96); filter: brightness(1.8); }
+  55% { opacity: 1; transform: scale(1.025); filter: brightness(1.25); }
+  100% { opacity: 1; transform: scale(1); filter: brightness(1); }
 }
 
 .result-actions {
@@ -667,6 +687,16 @@ canvas:focus-visible {
   25% { transform: translateX(-6px); }
   55% { transform: translateX(5px); }
   75% { transform: translateX(-2px); }
+}
+
+@media (min-height: 761px) and (max-height: 880px) {
+  .result-content {
+    gap: 6px;
+  }
+
+  .result-field-wrap {
+    width: min(100%, 320px);
+  }
 }
 
 @media (min-height: 651px) and (max-height: 760px) {
@@ -810,6 +840,15 @@ canvas:focus-visible {
 
   .round-summary strong {
     font-size: 21px;
+  }
+
+  .round-summary > div {
+    gap: 2px;
+    padding-inline: 2px;
+  }
+
+  .round-summary span {
+    font-size: 10px;
   }
 
   .replay-button {

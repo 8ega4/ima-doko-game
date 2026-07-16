@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
   <title id="title">いま、どこ？ — 消えたボール</title>
-  <desc id="description">見える、消える、頭の中で追い続ける15秒のワンタップゲーム</desc>
+  <desc id="description">見える、消える、頭の中で追い続ける全5ラウンドのワンタップゲーム</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#07182b" />
@@ -30,7 +30,7 @@
   <path d="M68 84H246M68 84V130M1132 546H954M1132 546V500" fill="none" stroke="#25d9ff" stroke-width="5" />
 
   <g transform="translate(72 134)">
-    <text x="14" y="0" fill="#25d9ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="25" font-weight="700" letter-spacing="5">15 SEC. / 3 ROUND / 1 TAP</text>
+    <text x="14" y="0" fill="#25d9ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="25" font-weight="700" letter-spacing="5">25 SEC. / 5 ROUND / 1 TAP</text>
     <text x="0" y="112" fill="#f7f3ea" font-family="'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif" font-size="92" font-weight="900" letter-spacing="-4">いま、どこ？</text>
     <text x="3" y="171" fill="#f4f700" font-family="'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif" font-size="35" font-weight="800" letter-spacing="2">消えたボールの位置を当てろ</text>
     <path d="M0 209H490" stroke="#25d9ff" stroke-opacity=".42" stroke-width="2" />

@@ -3,6 +3,7 @@ import { generateRoundSpecs } from './rounds'
 import {
   createChallengeUrl,
   createLineShareUrl,
+  createRoundScoreLabels,
   createShareText,
   createThreadsIntentUrl,
   createXIntentUrl,
@@ -24,8 +25,14 @@ function result(index: number, distance: number, guess: Point | null): RoundResu
 
 const gameResult: GameResult = {
   seed: 'same-course',
-  rounds: [result(0, 0.02, { x: 0.5, y: 0.5 }), result(1, 0.18, { x: 0.2, y: 0.7 }), result(2, 1, null)],
-  totalScore: 180,
+  rounds: [
+    result(0, 0.02, { x: 0.5, y: 0.5 }),
+    result(1, 0.18, { x: 0.2, y: 0.7 }),
+    result(2, 1, null),
+    result(3, 0.24, { x: 0.75, y: 0.2 }),
+    result(4, 0.12, { x: 0.35, y: 0.8 }),
+  ],
+  totalScore: 320,
   title: '追跡者',
 }
 
@@ -47,13 +54,18 @@ describe('result sharing', () => {
     vi.stubGlobal('window', { location: { href: 'https://example.com/game?old=1#top' } })
     expect(createChallengeUrl('seed 42')).toBe('https://example.com/game?seed=seed+42')
     expect(createShareText(gameResult)).toContain('同じ軌道で勝負 → https://example.com/game?seed=same-course')
+    expect(createShareText(gameResult)).toContain('320/500点')
+  })
+
+  it('includes R1 through R5 in share-card score labels', () => {
+    expect(createRoundScoreLabels(gameResult)).toEqual(['R1 98', 'R2 82', 'R3 0', 'R4 76', 'R5 88'])
   })
 
   it('encodes the result in an X Web Intent URL', () => {
     vi.stubGlobal('window', { location: { href: 'https://example.com/game' } })
     const url = new URL(createXIntentUrl(gameResult))
     expect(url.origin + url.pathname).toBe('https://x.com/intent/post')
-    expect(url.searchParams.get('text')).toContain('180/300点')
+    expect(url.searchParams.get('text')).toContain('320/500点')
     expect(url.searchParams.get('text')).toContain('#いまどこゲーム')
   })
 
@@ -61,7 +73,7 @@ describe('result sharing', () => {
     vi.stubGlobal('window', { location: { href: 'https://example.com/game' } })
     const url = new URL(createThreadsIntentUrl(gameResult))
     expect(url.origin + url.pathname).toBe('https://www.threads.com/intent/post')
-    expect(url.searchParams.get('text')).toContain('180/300点')
+    expect(url.searchParams.get('text')).toContain('320/500点')
     expect(url.searchParams.get('text')).toContain('https://example.com/game?seed=same-course')
   })
 
@@ -70,7 +82,7 @@ describe('result sharing', () => {
     const url = new URL(createLineShareUrl(gameResult))
     expect(url.origin + url.pathname).toBe('https://social-plugins.line.me/lineit/share')
     expect(url.searchParams.get('url')).toBe('https://example.com/game?seed=same-course')
-    expect(url.searchParams.get('text')).toContain('180/300点')
+    expect(url.searchParams.get('text')).toContain('320/500点')
     expect(url.searchParams.get('text')).not.toContain('https://example.com/game')
   })
 })

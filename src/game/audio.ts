@@ -1,7 +1,8 @@
-type ToneKind = 'start' | 'hide' | 'hit' | 'miss' | 'finish'
+type ToneKind = 'start' | 'finalStart' | 'hide' | 'hit' | 'miss' | 'finish'
 
 const TONES: Record<ToneKind, { frequency: number; duration: number }> = {
   start: { frequency: 520, duration: 0.08 },
+  finalStart: { frequency: 880, duration: 0.12 },
   hide: { frequency: 280, duration: 0.08 },
   hit: { frequency: 760, duration: 0.12 },
   miss: { frequency: 150, duration: 0.15 },

@@ -11,6 +11,7 @@ import {
 import type { GameResult } from '../game/types'
 import { Icon } from './Icon'
 import { ResultCanvas } from './ResultCanvas'
+import { MAX_TOTAL_SCORE } from '../game/constants'
 
 type ResultScreenProps = {
   result: GameResult
@@ -57,7 +58,7 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
       <section className="result-content">
         <div className="result-score">
           <div className="score-lockup">
-            <strong>{result.totalScore}</strong><span>/ 300</span>
+            <strong>{result.totalScore}</strong><span>/ {MAX_TOTAL_SCORE}</span>
             {isNewBest && <em>NEW BEST</em>}
           </div>
           <h1>{result.title}</h1>

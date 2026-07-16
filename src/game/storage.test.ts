@@ -17,4 +17,14 @@ describe('local storage', () => {
     saveStoredState({ bestScore: 210, muted: true })
     expect(setItem).toHaveBeenCalledWith('ima-doko:v1', JSON.stringify({ version: 1, bestScore: 210, muted: true }))
   })
+
+  it('keeps a saved 500-point best score after reload', () => {
+    vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ version: 1, bestScore: 500, muted: false }) })
+    expect(loadStoredState().bestScore).toBe(500)
+  })
+
+  it('clamps corrupted scores to the current maximum', () => {
+    vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ version: 1, bestScore: 900, muted: false }) })
+    expect(loadStoredState().bestScore).toBe(500)
+  })
 })

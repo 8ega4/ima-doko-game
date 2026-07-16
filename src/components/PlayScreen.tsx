@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { distanceBetween } from '../game/physics'
-import { JUDGE_DURATION_MS } from '../game/constants'
+import {
+  JUDGE_DURATION_MS,
+  REVEAL_DURATION_MS,
+  ROUND_INTRO_DURATION_MS,
+  TOTAL_ROUNDS,
+} from '../game/constants'
 import { generateRoundSpecs } from '../game/rounds'
 import { getTitle, scoreDistance, toCanonicalPixels } from '../game/scoring'
 import { playTone, vibrate } from '../game/audio'
@@ -17,11 +22,11 @@ type PlayScreenProps = {
 }
 
 const PHASE_DURATION: Record<GamePhase, number> = {
-  roundIntro: 500,
-  visible: 1200,
+  roundIntro: ROUND_INTRO_DURATION_MS,
+  visible: 0,
   hidden: 0,
   judgeFrozen: JUDGE_DURATION_MS,
-  reveal: 1650,
+  reveal: REVEAL_DURATION_MS,
 }
 
 export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: PlayScreenProps) {
@@ -66,15 +71,17 @@ export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: P
     const tick = () => {
       if (pausedAtRef.current === null && !transitioningRef.current) {
         const elapsed = performance.now() - phaseStartedAt
-        const duration = phase === 'hidden'
-          ? round.hiddenDurationMs
+        const duration = phase === 'visible'
+          ? round.visibleDurationMs
+          : phase === 'hidden'
+            ? round.hiddenDurationMs
           : phase === 'judgeFrozen' && relaxed
             ? Number.POSITIVE_INFINITY
             : PHASE_DURATION[phase]
         if (elapsed >= duration) {
           transitioningRef.current = true
           if (phase === 'roundIntro') {
-            playTone('start', muted)
+            playTone(roundIndex === TOTAL_ROUNDS - 1 ? 'finalStart' : 'start', muted)
             transition('visible')
           } else if (phase === 'visible') {
             playTone('hide', muted)
@@ -101,7 +108,7 @@ export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: P
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [muted, onComplete, phase, phaseStartedAt, relaxed, results, round.hiddenDurationMs, roundIndex, rounds.length, seed, submitGuess, transition])
+  }, [muted, onComplete, phase, phaseStartedAt, relaxed, results, round.hiddenDurationMs, round.visibleDurationMs, roundIndex, rounds.length, seed, submitGuess, transition])
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -117,8 +124,9 @@ export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: P
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
 
+  const isFinalRound = roundIndex === TOTAL_ROUNDS - 1
   const status = phase === 'roundIntro'
-    ? `ROUND ${roundIndex + 1}`
+    ? isFinalRound ? 'FINAL ROUND' : `ROUND ${roundIndex + 1}`
     : phase === 'visible'
       ? '見て'
       : phase === 'hidden'
@@ -130,7 +138,7 @@ export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: P
             : '見失った'
 
   const phaseHint = phase === 'roundIntro'
-    ? `反射 ${round.targetBounces}回`
+    ? round.difficultyLabel
     : phase === 'judgeFrozen'
       ? relaxed ? '矢印キーで照準、Enterで決定' : 'ボールがいる場所をタップ'
       : phase === 'hidden'
@@ -140,11 +148,11 @@ export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: P
           : '\u00a0'
 
   return (
-    <main className={`screen play-screen phase-${phase} ${phase === 'reveal' && (results.at(-1)?.score ?? 100) < 55 ? 'is-miss' : ''}`}>
+    <main className={`screen play-screen phase-${phase} ${isFinalRound ? 'is-final-round' : ''} ${phase === 'reveal' && (results.at(-1)?.score ?? 100) < 55 ? 'is-miss' : ''}`}>
       <header className="play-header">
         <span className="brand-small">いま、どこ？</span>
-        <div className="round-progress" aria-label={`3ラウンド中${roundIndex + 1}ラウンド`}>
-          <span>{roundIndex + 1} / 3</span>
+        <div className="round-progress" aria-label={`${TOTAL_ROUNDS}ラウンド中${roundIndex + 1}ラウンド`}>
+          <span>{roundIndex + 1} / {TOTAL_ROUNDS}</span>
           <div>{rounds.map((_, index) => <i key={index} className={index <= roundIndex ? 'is-active' : ''} />)}</div>
         </div>
         <strong>{cumulativeScore}</strong>
@@ -167,7 +175,7 @@ export function PlayScreen({ seed, muted, relaxed, onToggleMute, onComplete }: P
           回答中はフィールドをタップできます。キーボードでは矢印キーで照準を動かし、Enterキーで決定します。
         </p>
         <div className="play-footer">
-          <span>{relaxed ? 'じっくりモード ∞' : phase === 'reveal' ? '測定完了' : roundIndex === 0 ? 'ボールは等速で反射する' : `反射 ${round.targetBounces}回`}</span>
+          <span>{relaxed ? 'じっくりモード ∞' : phase === 'reveal' ? '測定完了' : roundIndex === 0 ? 'ボールは等速で反射する' : round.difficultyLabel}</span>
           <button className="sound-button compact" type="button" onClick={onToggleMute} aria-label={muted ? '音を出す' : '音を消す'}>
             <Icon name={muted ? 'mute' : 'sound'} />
             <span>{muted ? 'OFF' : 'ON'}</span>

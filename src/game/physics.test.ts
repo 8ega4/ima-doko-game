@@ -24,4 +24,13 @@ describe('wall reflection physics', () => {
     expect(result.state.y).toBeLessThanOrEqual(1 - BALL_RADIUS)
     expect(result.bounces).toBeGreaterThan(4)
   })
+
+  it('keeps the final-round speed inside the field across a long frame', () => {
+    const result = simulateMotion({ x: 0.44, y: 0.29, vx: 0.46, vy: -0.41 }, 12)
+    expect(result.state.x).toBeGreaterThanOrEqual(BALL_RADIUS)
+    expect(result.state.x).toBeLessThanOrEqual(1 - BALL_RADIUS)
+    expect(result.state.y).toBeGreaterThanOrEqual(BALL_RADIUS)
+    expect(result.state.y).toBeLessThanOrEqual(1 - BALL_RADIUS)
+    expect(result.bounces).toBeGreaterThan(8)
+  })
 })
