@@ -36,11 +36,11 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
     }
   }
 
-  const shareToInstagram = () => run(async () => {
+  const shareChallenge = () => run(async () => {
     const outcome = await shareResult(result)
     if (outcome === 'fallback') {
       await downloadShareCard(result)
-      setNotice('画像を保存しました。Instagramストーリーズで選択してください。')
+      setNotice('共有用の画像を保存しました。お好きなSNSでシェアしてください。')
     } else if (outcome === 'shared') {
       setNotice('共有を完了しました。')
     }
@@ -89,9 +89,9 @@ export function ResultScreen({ result, isNewBest, onReplay }: ResultScreenProps)
               <Icon name="threads" />
               <span>Threads</span>
             </button>
-            <button className="platform-share-button platform-instagram" type="button" disabled={busy} onClick={shareToInstagram} aria-label="Instagramストーリーにシェア">
-              <Icon name="instagram" />
-              <span>ストーリー<small>Instagram</small></span>
+            <button className="platform-share-button platform-challenge" type="button" disabled={busy} onClick={shareChallenge}>
+              <Icon name="challenge" />
+              <span>挑戦状を送る</span>
             </button>
             <button className="platform-share-button platform-line" type="button" onClick={() => openPlatform(openLineShare, 'LINEの共有画面を開きました。')}>
               <Icon name="line" />

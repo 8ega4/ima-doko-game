@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { PlayScreen } from './components/PlayScreen'
 import { ResultScreen } from './components/ResultScreen'
 import { TitleScreen } from './components/TitleScreen'
-import { unlockAudio } from './game/audio'
+import { playTone, unlockAudio } from './game/audio'
 import { createSeed, sanitizeSeed } from './game/prng'
 import { loadStoredState, saveStoredState } from './game/storage'
 import type { GameResult } from './game/types'
@@ -25,12 +25,14 @@ export default function App() {
   }
 
   const toggleMute = () => {
-    setMuted((current) => {
-      const next = !current
-      if (!next) void unlockAudio(false)
-      updateStorage(bestScore, next)
-      return next
-    })
+    const next = !muted
+    if (!next) {
+      void unlockAudio(false).then((unlocked) => {
+        if (unlocked) playTone('start', false)
+      })
+    }
+    setMuted(next)
+    updateStorage(bestScore, next)
   }
 
   if (screen === 'play') {

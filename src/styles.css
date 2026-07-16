@@ -633,8 +633,8 @@ canvas:focus-visible {
   --platform-color: var(--white);
 }
 
-.platform-instagram {
-  --platform-color: #ff4d9d;
+.platform-challenge {
+  --platform-color: var(--cyan);
 }
 
 .platform-line {
