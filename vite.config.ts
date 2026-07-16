@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  publicDir: 'docs/design',
+  publicDir: 'public',
   base: process.env.GITHUB_PAGES === 'true' ? '/ima-doko-game/' : '/',
   test: {
     environment: 'node',

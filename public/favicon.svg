@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">いま、どこ？</title>
+  <desc id="description">消えたボールの軌道を表すゲームアイコン</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07172a" />
+      <stop offset="1" stop-color="#020713" />
+    </linearGradient>
+    <filter id="cyan-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <filter id="yellow-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="13" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#background)" />
+  <g fill="none" stroke="#25d9ff">
+    <path d="M82 142V82h60M370 82h60v60M430 370v60h-60M142 430H82v-60" stroke-width="18" stroke-linecap="square" filter="url(#cyan-glow)" />
+    <circle cx="256" cy="256" r="104" stroke-opacity=".18" stroke-width="4" stroke-dasharray="7 13" />
+  </g>
+
+  <path d="M117 335C150 224 221 163 304 176C356 184 384 217 384 255C384 303 345 325 299 301C269 286 256 258 272 225"
+    fill="none" stroke="#ff654f" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="43 27" />
+  <circle cx="117" cy="335" r="20" fill="#ff654f" />
+
+  <g filter="url(#yellow-glow)">
+    <circle cx="272" cy="225" r="31" fill="#f4f700" />
+    <circle cx="272" cy="225" r="48" fill="none" stroke="#f4f700" stroke-width="7" stroke-dasharray="15 12" />
+  </g>
+  <path d="M272 151v26M272 273v26M198 225h26M320 225h26" stroke="#f4f700" stroke-width="8" stroke-linecap="square" />
+</svg>
