@@ -42,3 +42,5 @@ mainブランチへのpush時は `.github/workflows/deploy-pages.yml` が検証�
 - ログイン、API、データベース、グローバルランキングは不使用
 
 ビジュアル仕様は `docs/design/`、実装要件は `IMPLEMENTATION_PROMPT.md` を参照してください。
+
+ゲーム本体は `/`、紹介LPは `/lp/` で表示されます。LPのセクション別コンセプトと実装比較は `docs/design/lp/` にまとめています。

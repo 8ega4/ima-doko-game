@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { LandingPage } from './components/LandingPage'
 import { PlayScreen } from './components/PlayScreen'
 import { ResultScreen } from './components/ResultScreen'
 import { TitleScreen } from './components/TitleScreen'
@@ -11,6 +12,7 @@ type Screen = 'title' | 'play' | 'result'
 
 export default function App() {
   const initialChallengeSeed = useMemo(() => sanitizeSeed(new URLSearchParams(window.location.search).get('seed')), [])
+  const [isLandingPage, setIsLandingPage] = useState(() => /\/lp\/?$/.test(window.location.pathname))
   const initialStoredState = useMemo(loadStoredState, [])
   const [screen, setScreen] = useState<Screen>('title')
   const [seed, setSeed] = useState(() => initialChallengeSeed ?? createSeed())
@@ -19,6 +21,17 @@ export default function App() {
   const [muted, setMuted] = useState(initialStoredState.muted)
   const [relaxed, setRelaxed] = useState(false)
   const [isNewBest, setIsNewBest] = useState(false)
+
+  useEffect(() => {
+    const syncScreenWithPath = () => {
+      setScreen('title')
+      setIsLandingPage(/\/lp\/?$/.test(window.location.pathname))
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
+
+    window.addEventListener('popstate', syncScreenWithPath)
+    return () => window.removeEventListener('popstate', syncScreenWithPath)
+  }, [])
 
   const updateStorage = (nextBest: number | null, nextMuted: boolean) => {
     saveStoredState({ bestScore: nextBest, muted: nextMuted })
@@ -33,6 +46,20 @@ export default function App() {
     }
     setMuted(next)
     updateStorage(bestScore, next)
+  }
+
+  const startGame = () => {
+    void unlockAudio(muted)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    setScreen('play')
+  }
+
+  const showGameTop = () => {
+    const gamePath = window.location.pathname.replace(/\/lp\/?$/, '/')
+    window.history.pushState({}, '', `${gamePath}${window.location.search}`)
+    setIsLandingPage(false)
+    setScreen('title')
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
   if (screen === 'play') {
@@ -72,18 +99,26 @@ export default function App() {
     )
   }
 
-  return (
-    <TitleScreen
-      bestScore={bestScore}
-      muted={muted}
-      relaxed={relaxed}
-      isChallenge={initialChallengeSeed !== null}
-      onToggleMute={toggleMute}
-      onToggleRelaxed={() => setRelaxed((current) => !current)}
-      onStart={() => {
-        void unlockAudio(muted)
-        setScreen('play')
-      }}
-    />
-  )
+  return isLandingPage
+    ? (
+        <LandingPage
+          bestScore={bestScore}
+          muted={muted}
+          relaxed={relaxed}
+          onEnterGame={showGameTop}
+          onToggleMute={toggleMute}
+          onToggleRelaxed={() => setRelaxed((current) => !current)}
+        />
+      )
+    : (
+        <TitleScreen
+          bestScore={bestScore}
+          muted={muted}
+          relaxed={relaxed}
+          isChallenge={initialChallengeSeed !== null}
+          onStart={startGame}
+          onToggleMute={toggleMute}
+          onToggleRelaxed={() => setRelaxed((current) => !current)}
+        />
+      )
 }
