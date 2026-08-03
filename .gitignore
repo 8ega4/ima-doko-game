@@ -1,5 +1,7 @@
 node_modules
 dist
+github-pages-dist
+.wrangler
 coverage
 *.tsbuildinfo
 .DS_Store

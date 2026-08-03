@@ -2,7 +2,9 @@
 
 消えたボールの位置を当てる、スマートフォン向けのワンタップブラウザゲームです。1プレイは5ラウンド、500点満点、約25秒です。
 
-プレイ: https://8ega4.github.io/ima-doko-game/
+プレイ: https://ima-doko-game.pages.dev/
+
+紹介LP: https://ima-doko-game.pages.dev/lp/
 
 ## 開発
 
@@ -20,17 +22,17 @@ npm test
 npm run build
 ```
 
-## GitHub Pages
+## Cloudflare Pages
 
-リポジトリ名を `ima-doko-game` とした設定です。
+Cloudflare PagesのDirect Uploadプロジェクト `ima-doko-game` へ公開します。
 
 ```bash
-GITHUB_PAGES=true npm run build
+npm run deploy:cloudflare
 ```
 
-mainブランチへのpush時は `.github/workflows/deploy-pages.yml` が検証・ビルド・公開を自動実行します。GitHubのリポジトリ設定で Pages のソースを「GitHub Actions」にしてください。別のリポジトリ名にする場合は `vite.config.ts` の `base` を変更します。
+公開先は `https://ima-doko-game.pages.dev/`、production branchは `main`、build outputは `dist` です。デプロイにはCloudflare Pages編集権限を持つWrangler認証が必要です。
 
-公開先が `https://8ega4.github.io/ima-doko-game/` 以外の場合は、`index.html` の `og:url` と `og:image` も公開URLに合わせて変更してください。
+旧GitHub Pages URL `https://8ega4.github.io/ima-doko-game/` は、mainブランチへのpush時に `.github/workflows/deploy-pages.yml` からリダイレクト専用ページを公開します。TOP、`/lp/`、query、hashをCloudflare Pagesへ引き継ぎます。
 
 ## 仕様
 

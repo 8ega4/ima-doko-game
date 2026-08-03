@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   plugins: [react()],
   publicDir: 'public',
-  base: process.env.GITHUB_PAGES === 'true' ? '/ima-doko-game/' : '/',
+  base: '/',
   build: {
     rollupOptions: {
       input: {

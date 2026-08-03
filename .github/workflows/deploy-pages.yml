@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Redirect GitHub Pages to Cloudflare Pages
 
 on:
   push:
@@ -31,12 +31,15 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-        env:
-          GITHUB_PAGES: 'true'
+      - name: Build redirect artifact
+        run: |
+          mkdir -p github-pages-dist
+          cp scripts/github-pages-redirect.html github-pages-dist/index.html
+          cp scripts/github-pages-redirect.html github-pages-dist/404.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: github-pages-dist
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

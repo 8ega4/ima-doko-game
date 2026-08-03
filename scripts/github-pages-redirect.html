@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content="0; url=https://ima-doko-game.pages.dev/" />
+    <link rel="canonical" href="https://ima-doko-game.pages.dev/" />
+    <title>いま、どこ？ — 移転しました</title>
+    <script>
+      (() => {
+        const destination = new URL('https://ima-doko-game.pages.dev/')
+        const legacyPrefix = '/ima-doko-game'
+        const legacyPath = window.location.pathname
+        const nextPath = legacyPath.startsWith(legacyPrefix)
+          ? legacyPath.slice(legacyPrefix.length)
+          : '/'
+
+        destination.pathname = nextPath || '/'
+        destination.search = window.location.search
+        destination.hash = window.location.hash
+        window.location.replace(destination.href)
+      })()
+    </script>
+  </head>
+  <body>
+    <p>
+      「いま、どこ？」は移転しました。
+      <a href="https://ima-doko-game.pages.dev/">新しい公開先へ移動する</a>
+    </p>
+  </body>
+</html>
