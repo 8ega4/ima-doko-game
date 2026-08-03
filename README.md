@@ -24,7 +24,9 @@ npm run build
 
 ## Cloudflare Pages
 
-Cloudflare PagesのDirect Uploadプロジェクト `ima-doko-game` へ公開します。
+`main` へのpush時にGitHub Actionsが検証とbuildを行い、Cloudflare PagesのDirect Uploadプロジェクト `ima-doko-game` へ本番公開します。GitHub Actionsには `CLOUDFLARE_ACCOUNT_ID` と、対象アカウントのCloudflare Pages編集権限だけを持つ `CLOUDFLARE_API_TOKEN` が必要です。
+
+緊急時は、ローカルのWrangler認証から同じプロジェクトへ手動公開できます。
 
 ```bash
 npm run deploy:cloudflare

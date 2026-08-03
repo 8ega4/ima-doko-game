@@ -1,4 +1,4 @@
-name: Redirect GitHub Pages to Cloudflare Pages
+name: Deploy Cloudflare Pages and Redirect GitHub Pages
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  deployments: write
   pages: write
   id-token: write
 
@@ -21,8 +22,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -31,15 +32,24 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=ima-doko-game --branch=main --commit-hash=${{ github.sha }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          packageManager: npm
+          wranglerVersion: 4.118.0
       - name: Build redirect artifact
         run: |
           mkdir -p github-pages-dist
           cp scripts/github-pages-redirect.html github-pages-dist/index.html
           cp scripts/github-pages-redirect.html github-pages-dist/404.html
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: github-pages-dist
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
